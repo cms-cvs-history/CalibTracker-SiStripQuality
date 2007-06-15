@@ -6,7 +6,7 @@
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 
 
-#include "CalibTracker/SiStripQuality/interface/SiStripBadStrip.h"
+#include "CondFormats/SiStripObjects/interface/SiStripBadStrip.h"
 
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h" 
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
@@ -23,7 +23,7 @@
 
 
 
-#include "CondTools/SiStrip/test/SiStripBadStripBuilder.h"
+#include "CalibTracker/SiStripQuality/test/SiStripBadStripBuilder.h"
 
 using namespace std;
 using namespace cms;
