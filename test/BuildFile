@@ -18,7 +18,7 @@
 <use name=DataFormats/SiStripDetId>
 
 <library file="*.cc" name=testSiStripQuality>
-<flags SEAL_PLUGIN_NAME="testSiStripQuality">
+	<flags EDM_PLUGIN=1>	
 </library>
 
 <export>
