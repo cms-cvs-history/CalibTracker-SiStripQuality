@@ -15,24 +15,15 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 
-//
-//
-// class decleration
-//
-namespace cms{
-  class SiStripBadStripReader : public edm::EDAnalyzer {
+class SiStripBadStripReader : public edm::EDAnalyzer {
 
-  public:
-    explicit SiStripBadStripReader( const edm::ParameterSet& );
-    ~SiStripBadStripReader();
+ public:
+  explicit SiStripBadStripReader( const edm::ParameterSet& );
+  ~SiStripBadStripReader();
   
-    void analyze( const edm::Event&, const edm::EventSetup& );
-
-  private:
-    bool printdebug_;
-  };
-}
+  void analyze( const edm::Event&, const edm::EventSetup& );
+    
+ private:
+  bool printdebug_;
+};
 #endif
-
-/*  LocalWords:  ifndef
- */

@@ -26,7 +26,6 @@
 #include "CalibTracker/SiStripQuality/test/SiStripBadStripBuilder.h"
 
 using namespace std;
-using namespace cms;
 
 SiStripBadStripBuilder::SiStripBadStripBuilder( const edm::ParameterSet& iConfig ):
   printdebug_(iConfig.getUntrackedParameter<bool>("printDebug",false)){}

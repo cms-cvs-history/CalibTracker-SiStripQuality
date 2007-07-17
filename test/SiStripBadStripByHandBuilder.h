@@ -1,5 +1,5 @@
-#ifndef SiStripBadStrip_H
-#define SiStripBadStrip_H
+#ifndef SiStripBadStripbyHand_H
+#define SiStripBadStripbyHand_H
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -11,23 +11,22 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 
-namespace cms{
-  class SiStripBadStripByHandBuilder : public edm::EDAnalyzer {
+class SiStripBadStripByHandBuilder : public edm::EDAnalyzer {
 
-  public:
+ public:
 
-    explicit SiStripBadStripByHandBuilder( const edm::ParameterSet& iConfig);
+  explicit SiStripBadStripByHandBuilder( const edm::ParameterSet& iConfig);
 
-    ~SiStripBadStripByHandBuilder(){};
+  ~SiStripBadStripByHandBuilder(){};
 
-    virtual void beginJob( const edm::EventSetup& );
+  virtual void beginJob( const edm::EventSetup& );
 
-    virtual void analyze(const edm::Event& , const edm::EventSetup& );
+  virtual void analyze(const edm::Event& , const edm::EventSetup& );
 
-  private:
-    bool printdebug_;
-    std::vector<uint32_t> ext_bad_detids;
-    std::vector< std::pair<uint32_t, unsigned short> > detid_strips;
-  };
-}
+ private:
+  bool printdebug_;
+  std::vector<uint32_t> ext_bad_detids;
+  std::vector< std::pair<uint32_t, unsigned short> > detid_strips;
+};
+
 #endif
