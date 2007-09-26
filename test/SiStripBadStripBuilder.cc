@@ -1,88 +1,62 @@
-// system include files
-#include <memory>
-
-// user include files
-
-#include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
-
-
-#include "CondFormats/SiStripObjects/interface/SiStripBadStrip.h"
-
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h" 
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/CommonDetUnit/interface/GeomDetUnit.h"
-#include "Geometry/CommonDetUnit/interface/GeomDetType.h"
-#include "Geometry/CommonTopologies/interface/StripTopology.h"
-#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
-#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetType.h"
-#include "DataFormats/FEDRawData/interface/FEDNumbering.h"
-
-
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGauss.h"
-
-
-
 #include "CalibTracker/SiStripQuality/test/SiStripBadStripBuilder.h"
 
-using namespace std;
+#include "CalibTracker/SiStripCommon/interface/SiStripDetInfoFileReader.h"
 
-SiStripBadStripBuilder::SiStripBadStripBuilder( const edm::ParameterSet& iConfig ):
-  printdebug_(iConfig.getUntrackedParameter<bool>("printDebug",false)){}
+#include <iostream>
+#include <fstream>
 
-void SiStripBadStripBuilder::beginJob( const edm::EventSetup& iSetup ) {
 
-  edm::ESHandle<TrackerGeometry> pDD;
-  iSetup.get<TrackerDigiGeometryRecord>().get( pDD );     
-  edm::LogInfo("SiStripBadStripBuilder") <<" There are "<<pDD->detUnits().size() <<" detectors"<<std::endl;
-  
-  for(TrackerGeometry::DetUnitContainer::const_iterator it = pDD->detUnits().begin(); it != pDD->detUnits().end(); it++){
-  
-    if( dynamic_cast<StripGeomDetUnit*>((*it))!=0){
-      uint32_t detid=((*it)->geographicalId()).rawId();            
-      const StripTopology& p = dynamic_cast<StripGeomDetUnit*>((*it))->specificTopology();
-      unsigned short Nstrips = p.nstrips();
-      if(Nstrips<1 || Nstrips>768 ) {
-	edm::LogError("SiStripBadStripBuilder")<<" Problem with Number of strips in detector.. "<< p.nstrips() <<" Exiting program"<<endl;
-	exit(1);
-      }
-      detid_strips.push_back( pair<uint32_t,unsigned short>(detid,Nstrips) );
-      if (printdebug_)
-	edm::LogInfo("SiStripBadStripBuilder")<< "detid " << detid << " Number of Strips " << Nstrips;
-    }
-  }
+SiStripBadStripBuilder::SiStripBadStripBuilder(const edm::ParameterSet& iConfig) : ConditionDBWriter<SiStripBadStrip>::ConditionDBWriter<SiStripBadStrip>(iConfig){
+
+  edm::LogInfo("SiStripBadStripBuilder") << " ctor ";
+  fp_ = iConfig.getUntrackedParameter<edm::FileInPath>("file",edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat"));
+  printdebug_ = iConfig.getUntrackedParameter<bool>("printDebug",false);
 }
 
-void SiStripBadStripBuilder::analyze(const edm::Event& evt, const edm::EventSetup& iSetup){
 
-  unsigned int run=evt.id().run();
+SiStripBadStripBuilder::~SiStripBadStripBuilder(){
+  edm::LogInfo("SiStripBadStripBuilder") << " dtor";
+}
+
+void SiStripBadStripBuilder::algoAnalyze(const edm::Event & event, const edm::EventSetup& iSetup){
+  
+  edm::LogInfo("SiStripBadStripBuilder") <<"SiStripBadStripBuilder::algoAnalyze called"<<std::endl;
+  unsigned int run=event.id().run();
 
   edm::LogInfo("SiStripBadStripBuilder") << "... creating dummy SiStripBadStrip Data for Run " << run << "\n " << std::endl;
-
-  SiStripBadStrip* SiStripBadStrip_ = new SiStripBadStrip();
-
   
-  for(std::vector< pair<uint32_t,unsigned short> >::const_iterator it = detid_strips.begin(); it != detid_strips.end(); it++){
+  obj = new SiStripBadStrip();
+
+  SiStripDetInfoFileReader reader(fp_.fullPath());
+  
+  const std::vector<uint32_t> DetIds = reader.getAllDetIds();
+  
+  for(std::vector<uint32_t>::const_iterator it=DetIds.begin(); it!=DetIds.end(); ++it){
+    
     std::vector<int> theSiStripVector;
+   
     short flag;
     
     //Generate bad channels for det detid: just for testing: channels 1, 37 , 258-265, 511 are always bad
     short TempBadChannels[11]={1,37,38,258,259,260,261,262,263,264,511};
-
+    
     unsigned int firstBadStrip=999;
     unsigned short NconsecutiveBadStrips=0;
 
-    //loop on strips
-    for(unsigned short jstrip=0; jstrip<it->second; jstrip++){
+    int NStrips=reader.getNumberOfApvsAndStripLength(*it).first*128;
 
+    //loop on strips
+    for(unsigned short jstrip=0; jstrip<NStrips; jstrip++){
+      
       // set channel good =0 or bad=1
       flag=0;
       for(int i=0;i<12;i++){
 	if(jstrip==TempBadChannels[i]){
 	  flag=1;
-	  edm::LogInfo("SiStripBadStripBuilder") << "detid " << it->first 
-						 << " strip " << jstrip << "\t "
-						 << " \t flag 1" << std::endl;
+	  if (printdebug_)
+	    edm::LogInfo("SiStripBadStripBuilder") << "detid " << *it
+						   << " strip " << jstrip << "\t "
+						   << " \t flag 1" << std::endl;
 	  break;
 	}
       }
@@ -92,13 +66,13 @@ void SiStripBadStripBuilder::analyze(const edm::Event& evt, const edm::EventSetu
 	}
 	NconsecutiveBadStrips++;
       }
-
-      if (flag==0 ||  jstrip==it->second-1){ //out from a range of bad strips or no bad strips before
+      
+      if (flag==0 ||  jstrip==NStrips-1){ //out from a range of bad strips or no bad strips before
 	if (NconsecutiveBadStrips!=0){
-	  unsigned int theBadStripRange = ((firstBadStrip & 0xFFFF) << 16) | (NconsecutiveBadStrips & 0xFFFF) ;
+	  int theBadStripRange = ((firstBadStrip & 0xFFFF) << 16) | (NconsecutiveBadStrips & 0xFFFF) ;
 	 
 	  if (printdebug_)
-	    edm::LogInfo("SiStripBadStripBuilder") << "detid " << it->first << " \t"
+	    edm::LogInfo("SiStripBadStripBuilder") << "detid " << *it << " \t"
 	      //<< " strip " << jstrip << "\t "
 						   << " firstBadStrip " << firstBadStrip << "\t "
 						   << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
@@ -111,32 +85,11 @@ void SiStripBadStripBuilder::analyze(const edm::Event& evt, const edm::EventSetu
 	}
       }     
     }
-  	    
-      
+          
     SiStripBadStrip::Range range(theSiStripVector.begin(),theSiStripVector.end());
-    if ( ! SiStripBadStrip_->put(it->first,range) )
-      edm::LogError("SiStripBadStripBuilder")<<"[SiStripBadStripBuilder::analyze] detid already exists"<<std::endl;
-  }
-  
-  
-  //End now write sistripnoises data in DB
-  edm::Service<cond::service::PoolDBOutputService> mydbservice;
-  
-  if( mydbservice.isAvailable() ){
-    try{
-      if( mydbservice->isNewTagRequest("SiStripBadStripRcd") ){
-	mydbservice->createNewIOV<SiStripBadStrip>(SiStripBadStrip_,mydbservice->endOfTime(),"SiStripBadStripRcd");      
-      } else {
-	mydbservice->appendSinceTime<SiStripBadStrip>(SiStripBadStrip_,mydbservice->currentTime(),"SiStripBadStripRcd");      
-      }
-    }catch(const cond::Exception& er){
-      edm::LogError("SiStripBadStripBuilder")<<er.what()<<std::endl;
-    }catch(const std::exception& er){
-      edm::LogError("SiStripBadStripBuilder")<<"caught std::exception "<<er.what()<<std::endl;
-    }catch(...){
-      edm::LogError("SiStripBadStripBuilder")<<"Funny error"<<std::endl;
-    }
-  }else{
-    edm::LogError("SiStripBadStripBuilder")<<"Service is unavailable"<<std::endl;
+    if ( ! obj->put(*it,range) )
+    edm::LogError("SiStripBadStripBuilder")<<"[SiStripBadStripBuilder::analyze] detid already exists"<<std::endl;
   }
 }
+
+

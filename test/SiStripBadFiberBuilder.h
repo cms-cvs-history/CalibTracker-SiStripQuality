@@ -1,5 +1,5 @@
-#ifndef SiStripBadStripBuilder_H
-#define SiStripBadStripBuilder_H
+#ifndef SiStripBadFiberBuilder_H
+#define SiStripBadFiberBuilder_H
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -13,12 +13,12 @@
 
 #include <ext/hash_map>
 
-class SiStripBadStripBuilder : public ConditionDBWriter<SiStripBadStrip> {
+class SiStripBadFiberBuilder : public ConditionDBWriter<SiStripBadStrip> {
 
 public:
 
-  explicit SiStripBadStripBuilder(const edm::ParameterSet&);
-  ~SiStripBadStripBuilder();
+  explicit SiStripBadFiberBuilder(const edm::ParameterSet&);
+  ~SiStripBadFiberBuilder();
 
   void algoAnalyze(const edm::Event & event, const edm::EventSetup& iSetup);
 
