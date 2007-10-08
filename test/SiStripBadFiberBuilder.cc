@@ -34,7 +34,7 @@ void SiStripBadFiberBuilder::algoAnalyze(const edm::Event & event, const edm::Ev
   
   for(std::vector<uint32_t>::const_iterator it=DetIds.begin(); it!=DetIds.end(); ++it){
     
-    std::vector<int> theSiStripVector;
+    std::vector<unsigned int> theSiStripVector;
    
     //Generate bad channels for det detid: just for testing: channels 1, 37 , 258-265, 511 are always bad
     
