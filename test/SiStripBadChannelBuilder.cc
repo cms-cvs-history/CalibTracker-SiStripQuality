@@ -51,7 +51,7 @@ void SiStripBadChannelBuilder::algoAnalyze(const edm::Event & event, const edm::
 
 	if ( lastBad!=999 ){
 	  //save previous set
-	  theBadStripRange = ((firstBadStrip & 0xFFFF) << 16) | (NconsecutiveBadStrips & 0xFFFF) ;
+	  theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
 
 	  if (printdebug_)
 	    edm::LogInfo("SiStripBadChannelBuilder") << "detid " << *it << " \t"
@@ -70,8 +70,7 @@ void SiStripBadChannelBuilder::algoAnalyze(const edm::Event & event, const edm::
       lastBad=*is;
     }
 
-    theBadStripRange = ((firstBadStrip & 0xFFFF) << 16) | (NconsecutiveBadStrips & 0xFFFF) ;
-    
+    theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
     if (printdebug_)
       edm::LogInfo("SiStripBadChannelBuilder") << "detid " << *it << " \t"
 					     << " firstBadStrip " << firstBadStrip << "\t "

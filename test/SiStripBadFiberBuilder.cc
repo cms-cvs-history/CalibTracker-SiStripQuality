@@ -11,7 +11,7 @@ SiStripBadFiberBuilder::SiStripBadFiberBuilder(const edm::ParameterSet& iConfig)
   edm::LogInfo("SiStripBadFiberBuilder") << " ctor ";
   fp_ = iConfig.getUntrackedParameter<edm::FileInPath>("file",edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat"));
   printdebug_ = iConfig.getUntrackedParameter<bool>("printDebug",false);
-
+  BadModuleList_ = iConfig.getUntrackedParameter<std::vector<uint32_t> >("BadModuleList");
 }
 
 
@@ -32,8 +32,9 @@ void SiStripBadFiberBuilder::algoAnalyze(const edm::Event & event, const edm::Ev
   
   const std::vector<uint32_t> DetIds = reader.getAllDetIds();
   
-  for(std::vector<uint32_t>::const_iterator it=DetIds.begin(); it!=DetIds.end(); ++it){
-    
+  //  for(std::vector<uint32_t>::const_iterator it=DetIds.begin(); it!=DetIds.end(); ++it){
+  for(std::vector<uint32_t>::const_iterator it=BadModuleList_.begin(); it!=BadModuleList_.end(); ++it){
+  
     std::vector<unsigned int> theSiStripVector;
    
     //Generate bad channels for det detid: just for testing: channels 1, 37 , 258-265, 511 are always bad
@@ -43,24 +44,24 @@ void SiStripBadFiberBuilder::algoAnalyze(const edm::Event & event, const edm::Ev
 
     int NFibers=reader.getNumberOfApvsAndStripLength(*it).first/2;
 
-    if ( *it % 4 == 0 ){
+    if ( (*it>>2) % 4 == 0 ){
       firstBadStrip=0;
       NconsecutiveBadStrips=256;
-    } else if   ( *it % 4 == 1 ) {
+    } else if   ( (*it>>2) % 4 == 1 ) {
       firstBadStrip=256;
       NconsecutiveBadStrips=256;
-    } else  if   ( *it % 4 == 2 ) {
+      if (NFibers==3){
+	NconsecutiveBadStrips=512;
+      }
+    } else  if   ( (*it>>2) % 4 == 2 ) {
       firstBadStrip=0;
       NconsecutiveBadStrips=512;
     } else {
-      if (NFibers==3){
-	firstBadStrip=512;
-	NconsecutiveBadStrips=256;
-      }
+      firstBadStrip=256;
+      NconsecutiveBadStrips=256;
     }
       
-      
-    int theBadStripRange = ((firstBadStrip & 0xFFFF) << 16) | (NconsecutiveBadStrips & 0xFFFF) ;
+    unsigned int theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
     
     if (printdebug_)
       edm::LogInfo("SiStripBadFiberBuilder") << "detid " << *it << " \t"

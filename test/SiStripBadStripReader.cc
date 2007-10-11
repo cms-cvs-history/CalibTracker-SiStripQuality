@@ -29,8 +29,9 @@ void SiStripBadStripReader::analyze( const edm::Event& e, const edm::EventSetup&
 	for(int it=0;it<range.second-range.first;it++){
 	  unsigned int value=(*(range.first+it));
 	  edm::LogInfo("SiStripBadStripReader")  << "detid " << detid[id] << " \t"
-						 << " firstBadStrip " <<  ((value >> 16)  & 0xFFFF) << "\t "
-						 << " NconsecutiveBadStrips " << (value & 0xFFFF)  << "\t "
+						 << " firstBadStrip " <<  SiStripBadStrip_->decode(value).firstStrip << "\t "
+						 << " NconsecutiveBadStrips " << SiStripBadStrip_->decode(value).range << "\t "
+						 << " flag " << SiStripBadStrip_->decode(value).flag << "\t "
 						 << " packed integer " <<  std::hex << value << std::dec << "\t "
 	    //<< SiStripBadStrip_->getBadStrips(range)     << " \t"
 						 << std::endl;
