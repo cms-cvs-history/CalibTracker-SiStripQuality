@@ -11,8 +11,7 @@ SiStripBadChannelBuilder::SiStripBadChannelBuilder(const edm::ParameterSet& iCon
   edm::LogInfo("SiStripBadChannelBuilder") << " ctor ";
   fp_ = iConfig.getUntrackedParameter<edm::FileInPath>("file",edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat"));
   printdebug_ = iConfig.getUntrackedParameter<bool>("printDebug",false);
-  BadModuleList_ = iConfig.getUntrackedParameter<std::vector<uint32_t> >("BadModuleList");
-  BadChannelList_ = iConfig.getUntrackedParameter<std::vector<uint32_t> >("BadChannelList");
+  BadComponentList_ =  iConfig.getUntrackedParameter<Parameters>("BadComponentList");
 }
 
 
@@ -33,11 +32,13 @@ void SiStripBadChannelBuilder::algoAnalyze(const edm::Event & event, const edm::
   
   const std::vector<uint32_t> DetIds = reader.getAllDetIds();
   
-  //for(std::vector<uint32_t>::const_iterator it=DetIds.begin(); it!=DetIds.end(); ++it){
-  for(std::vector<uint32_t>::const_iterator it=BadModuleList_.begin(); it!=BadModuleList_.end(); ++it){
+  for(Parameters::iterator iBadComponent = BadComponentList_.begin(); iBadComponent != BadComponentList_.end(); ++iBadComponent ) {
     
+    uint32_t BadModule_ = iBadComponent->getParameter<uint32_t>("BadModule");
+    std::vector<uint32_t> BadChannelList_ = iBadComponent->getParameter<std::vector<uint32_t> >("BadChannelList");
+
     std::vector<unsigned int> theSiStripVector;
-    int NStrips=reader.getNumberOfApvsAndStripLength(*it).first*128;   
+    unsigned int NStrips=reader.getNumberOfApvsAndStripLength(BadModule_).first*128;   
     
     unsigned short lastBad=999;
     unsigned short firstBadStrip=0, NconsecutiveBadStrips=0;
@@ -54,7 +55,7 @@ void SiStripBadChannelBuilder::algoAnalyze(const edm::Event & event, const edm::
 	  theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
 
 	  if (printdebug_)
-	    edm::LogInfo("SiStripBadChannelBuilder") << "detid " << *it << " \t"
+	    edm::LogInfo("SiStripBadChannelBuilder") << "detid " << BadModule_ << " \t"
 						   << " firstBadStrip " << firstBadStrip << "\t "
 						   << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
 						   << " packed integer " << std::hex << theBadStripRange  << std::dec
@@ -72,7 +73,7 @@ void SiStripBadChannelBuilder::algoAnalyze(const edm::Event & event, const edm::
 
     theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
     if (printdebug_)
-      edm::LogInfo("SiStripBadChannelBuilder") << "detid " << *it << " \t"
+      edm::LogInfo("SiStripBadChannelBuilder") << "detid " << BadModule_ << " \t"
 					     << " firstBadStrip " << firstBadStrip << "\t "
 					     << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
 					     << " packed integer " << std::hex << theBadStripRange  << std::dec
@@ -81,7 +82,7 @@ void SiStripBadChannelBuilder::algoAnalyze(const edm::Event & event, const edm::
     theSiStripVector.push_back(theBadStripRange);
         
     SiStripBadStrip::Range range(theSiStripVector.begin(),theSiStripVector.end());
-    if ( ! obj->put(*it,range) )
+    if ( ! obj->put(BadModule_,range) )
     edm::LogError("SiStripBadChannelBuilder")<<"[SiStripBadChannelBuilder::analyze] detid already exists"<<std::endl;
   }
 }
