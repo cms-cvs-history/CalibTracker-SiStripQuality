@@ -30,6 +30,9 @@ private:
   edm::FileInPath fp_;
   bool printdebug_;
   SiStripBadStrip* obj ;
-  std::vector<uint32_t> BadModuleList_;
+
+  typedef std::vector< edm::ParameterSet > Parameters;
+  Parameters BadComponentList_;
+
 };
 #endif

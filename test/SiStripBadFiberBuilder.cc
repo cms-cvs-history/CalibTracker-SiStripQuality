@@ -4,14 +4,14 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <sstream>
 
 SiStripBadFiberBuilder::SiStripBadFiberBuilder(const edm::ParameterSet& iConfig) : ConditionDBWriter<SiStripBadStrip>::ConditionDBWriter<SiStripBadStrip>(iConfig){
 
   edm::LogInfo("SiStripBadFiberBuilder") << " ctor ";
   fp_ = iConfig.getUntrackedParameter<edm::FileInPath>("file",edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat"));
   printdebug_ = iConfig.getUntrackedParameter<bool>("printDebug",false);
-  BadModuleList_ = iConfig.getUntrackedParameter<std::vector<uint32_t> >("BadModuleList");
+  BadComponentList_ =  iConfig.getUntrackedParameter<Parameters>("BadComponentList");
 }
 
 
@@ -31,53 +31,43 @@ void SiStripBadFiberBuilder::algoAnalyze(const edm::Event & event, const edm::Ev
   SiStripDetInfoFileReader reader(fp_.fullPath());
   
   const std::vector<uint32_t> DetIds = reader.getAllDetIds();
-  
-  //  for(std::vector<uint32_t>::const_iterator it=DetIds.begin(); it!=DetIds.end(); ++it){
-  for(std::vector<uint32_t>::const_iterator it=BadModuleList_.begin(); it!=BadModuleList_.end(); ++it){
-  
+
+  std::stringstream ss;
+  for(Parameters::iterator iBadComponent = BadComponentList_.begin(); iBadComponent != BadComponentList_.end(); ++iBadComponent ) {
+    
+    uint32_t BadModule_ = iBadComponent->getParameter<uint32_t>("BadModule");
+    std::vector<uint32_t> BadApvList_ = iBadComponent->getParameter<std::vector<uint32_t> >("BadApvList");
+
     std::vector<unsigned int> theSiStripVector;
-   
-    //Generate bad channels for det detid: just for testing: channels 1, 37 , 258-265, 511 are always bad
+    unsigned int NStrips=reader.getNumberOfApvsAndStripLength(BadModule_).first*128;   
     
-    unsigned int firstBadStrip=999;
-    unsigned short NconsecutiveBadStrips=0;
+    unsigned short lastBad=999;
+    unsigned short firstBadStrip=0, NconsecutiveBadStrips=0;
+    unsigned int theBadStripRange;
+    
+    for(std::vector<uint32_t>::const_iterator is=BadApvList_.begin(); is!=BadApvList_.end(); ++is){
 
-    int NFibers=reader.getNumberOfApvsAndStripLength(*it).first/2;
-
-    if ( (*it>>2) % 4 == 0 ){
-      firstBadStrip=0;
-      NconsecutiveBadStrips=256;
-    } else if   ( (*it>>2) % 4 == 1 ) {
-      firstBadStrip=256;
-      NconsecutiveBadStrips=256;
-      if (NFibers==3){
-	NconsecutiveBadStrips=512;
-      }
-    } else  if   ( (*it>>2) % 4 == 2 ) {
-      firstBadStrip=0;
-      NconsecutiveBadStrips=512;
-    } else {
-      firstBadStrip=256;
-      NconsecutiveBadStrips=256;
-    }
+      firstBadStrip=(*is)*128;
+      NconsecutiveBadStrips=128;
       
-    unsigned int theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
-    
-    if (printdebug_)
-      edm::LogInfo("SiStripBadFiberBuilder") << "detid " << *it << " \t"
-					     << " firstBadStrip " << firstBadStrip << "\t "
-					     << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
-					     << " packed integer " << std::hex << theBadStripRange  << std::dec
-					     << std::endl; 	    
-    
-    theSiStripVector.push_back(theBadStripRange);
-    NconsecutiveBadStrips=0;
-    firstBadStrip=999;
-            
+      theBadStripRange = obj->encode(firstBadStrip,NconsecutiveBadStrips);
+      
+      if (printdebug_)
+	ss << "detid " << BadModule_ << " \t"
+	   << " firstBadStrip " << firstBadStrip << "\t "
+	   << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
+	   << " packed integer " << std::hex << theBadStripRange  << std::dec
+	   << std::endl; 	    
+      
+      theSiStripVector.push_back(theBadStripRange);
+    }      
+     
     SiStripBadStrip::Range range(theSiStripVector.begin(),theSiStripVector.end());
-    if ( ! obj->put(*it,range) )
+    if ( ! obj->put(BadModule_,range) )
       edm::LogError("SiStripBadFiberBuilder")<<"[SiStripBadFiberBuilder::analyze] detid already exists"<<std::endl;
   }
+  if (printdebug_)
+    edm::LogInfo("SiStripBadFiberBuilder") << ss.str();
 }
 
 
