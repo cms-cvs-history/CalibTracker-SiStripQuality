@@ -105,10 +105,9 @@ for run in 6095  6835  6931  7233  8427  8433  8555  9149  9163  9342  10213    
   cat template_SiStripBadModuleBuilder.cfg | sed -e "s@ insertRun@$run@g" -e "s@insertBadList@$Tmodules@" > $workarea/Modules_$run.cfg
   rm -f $workarea/Modules_$run.out
   cmsRun $workarea/Modules_$run.cfg | tee $workarea/Modules_$run.out
-
 done
 
 rm -f out
 mkdir TkMap
 rm -f TkMap/*
-cmsRun SiStripQualityStatistics.cfg | tee out
+cmsRun SiStripQualityStatistics.cfg | grep -v "processing" | tee out
