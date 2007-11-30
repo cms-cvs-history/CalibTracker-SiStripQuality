@@ -1,22 +1,31 @@
 #!/bin/sh
 
 function makeHtml(){
-    thewidth=600
-
+    thewidth=300
+    modulo=3
+    resize=400x400
 #Header
     echo "<html><head><title>Summary Page Quality</title></head>" 
-    echo '<table cellpadding="2" cellspacing="2" border="0" width="100%" align="center">'
+    echo '<table cellpadding="2" cellspacing="2" border="1" width="100%" align="center">'
     echo '<tbody>'
   
-    for file in `ls $webpath | grep png | cut -d "." -f 1`
+    i=0
+    for file in `ls $webpath | grep xml | cut -d "." -f 1`
       do
+      
       Run=`echo $file | cut -d "_" -f 3 | cut -d "_" -f 1` 
 
-      htmlfile=${htmlpath}/$file
-      echo '<tr><td valign="middle" align="center">'
-      echo '<a name="'$Run'">'Run $Run'</a>&nbsp;&nbsp;<a href="'${htmlfile}.pdf'">pdf</a>  <a href="'${htmlfile}.xml'">svg</a><br>'
-      echo '<a href="'${htmlfile}.png'"><img src="'${htmlfile}.png'" style="border: 0px solid ; width: '$thewidth'px; "></a>'
+      [ ! -e $webpath/$file.th.png ] &&  convert -size $resize $webpath/$file.png -resize $resize $webpath/$file.th.png
 
+      htmlfile=${htmlpath}/$file
+
+      [ $i -eq 0 ] && echo '<tr>'
+      echo '<td valign="middle" align="center">'
+      echo '<a name="'$Run'">'Run $Run'</a>&nbsp;&nbsp;<a href="'${htmlfile}.pdf'">pdf</a>  <a href="'${htmlfile}.xml'">svg</a><br>'
+      echo '<a href="'${htmlfile}.png'"><img src="'${htmlfile}.th.png'" style="border: 0px solid ; width: '$thewidth'px; "></a>'
+
+      let i++
+      [ $i -eq $modulo ] && i=0
     done
 
     echo '  </tbody>'
@@ -37,7 +46,7 @@ webfile=$webpathBase/MonitorQuality_$tag.html
 [ ! -e $webpathBase ] && mkdir $webpathBase
 [ ! -e $webpath ] && mkdir $webpath
 
-cp TkMap*_Run_*.*  $webpath/.
+cp -v TkMap*_Run_*.*  $webpath/.
 
 cd $webpathBase
 makeHtml > ${webfile}
