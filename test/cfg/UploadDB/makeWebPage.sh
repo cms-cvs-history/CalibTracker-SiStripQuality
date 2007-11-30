@@ -46,7 +46,7 @@ webfile=$webpathBase/MonitorQuality_$tag.html
 [ ! -e $webpathBase ] && mkdir $webpathBase
 [ ! -e $webpath ] && mkdir $webpath
 
-cp -v TkMap*_Run_*.*  $webpath/.
+cp -vu TkMap*_Run_*.*  $webpath/.
 
 cd $webpathBase
 makeHtml > ${webfile}
