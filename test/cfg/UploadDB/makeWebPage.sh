@@ -16,7 +16,7 @@ function makeHtml(){
       Run=`echo $file | cut -d "_" -f 3 | cut -d "_" -f 1` 
 
       if  [ $1 -eq 1 ] || [ ! -e $webpath/$file.th.png ]; then
-	  convert -size $resize $webpath/$file.png -resize $resize $webpath/$file.th.png && echo eccolo
+	  convert -size $resize $webpath/$file.png -resize $resize $webpath/$file.th.png 
       fi
 
       htmlfile=${htmlpath}/$file
@@ -51,7 +51,7 @@ webfile=$webpathBase/MonitorQuality_$tag.html
 [ ! -e $webpathBase ] && mkdir $webpathBase
 [ ! -e $webpath ] && mkdir $webpath
 
-cp -vu TkMap*_Run_*.*  $webpath/.
+#cp -vu TkMap*_Run_*.*  $webpath/.
 
 cd $webpathBase
 makeHtml $refresh > ${webfile}
