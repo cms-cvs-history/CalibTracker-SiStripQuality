@@ -15,7 +15,9 @@ function makeHtml(){
       
       Run=`echo $file | cut -d "_" -f 3 | cut -d "_" -f 1` 
 
-      [ ! -e $webpath/$file.th.png ] &&  convert -size $resize $webpath/$file.png -resize $resize $webpath/$file.th.png
+      if  [ $1 -eq 1 ] || [ ! -e $webpath/$file.th.png ]; then
+	  convert -size $resize $webpath/$file.png -resize $resize $webpath/$file.th.png && echo eccolo
+      fi
 
       htmlfile=${htmlpath}/$file
 
@@ -36,6 +38,9 @@ tag=""
 [ "c$1" == "c" ] && echo -e "\nplease specify tag" && exit
 tag=$1
 
+refresh=0
+[ "c$2" != "c" ] && refresh=$2
+
 webpathBase=/data1/MonitorQuality
 webpath=${webpathBase}/$tag
 webadd="http://cmstac11.cern.ch:8080"
@@ -49,5 +54,5 @@ webfile=$webpathBase/MonitorQuality_$tag.html
 cp -vu TkMap*_Run_*.*  $webpath/.
 
 cd $webpathBase
-makeHtml > ${webfile}
+makeHtml $refresh > ${webfile}
 cd -
