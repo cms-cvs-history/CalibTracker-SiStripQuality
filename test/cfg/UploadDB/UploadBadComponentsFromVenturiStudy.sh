@@ -68,7 +68,7 @@ A21="0x1c0892f4"   F21="0, 1"
 
 eval `scramv1 runtime -sh`
 
-workarea=tmp
+workarea=tmp1
 
 mkdir $workarea
 
@@ -100,14 +100,14 @@ for run in 6095  6835  6931  7233  8427  8433  8555  9149  9163  9342  10213    
 
   cat template_SiStripBadFiberBuilder.cfg | sed -e "s@ insertRun@$run@g" -e "s@insertBadList@$Tapvs@" > $workarea/Fibers_$run.cfg
   rm -f  $workarea/Fibers_$run.out
-  cmsRun  $workarea/Fibers_$run.cfg | tee $workarea/Fibers_$run.out
+  #cmsRun  $workarea/Fibers_$run.cfg | tee $workarea/Fibers_$run.out
 
   cat template_SiStripBadModuleBuilder.cfg | sed -e "s@ insertRun@$run@g" -e "s@insertBadList@$Tmodules@" > $workarea/Modules_$run.cfg
   rm -f $workarea/Modules_$run.out
-  cmsRun $workarea/Modules_$run.cfg | tee $workarea/Modules_$run.out
+ # cmsRun $workarea/Modules_$run.cfg | tee $workarea/Modules_$run.out
 done
 
 rm -f out
 mkdir TkMap
 rm -f TkMap/*
-cmsRun SiStripQualityStatistics.cfg | grep -v "processing" | tee out
+#cmsRun SiStripQualityStatistics.cfg | grep -v "processing" | tee out

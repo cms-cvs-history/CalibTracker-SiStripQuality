@@ -41,17 +41,17 @@ tag=$1
 refresh=0
 [ "c$2" != "c" ] && refresh=$2
 
-webpathBase=/data1/MonitorQuality
+webpathBase=`pwd`/MonitorQuality
 webpath=${webpathBase}/$tag
-webadd="http://cmstac11.cern.ch:8080"
-export htmlpath=`echo $webpath | sed -e "s@/data1@$webadd@"`
+webadd="http://webcms.ba.infn.it/giordano/MonitorQuality"
+export htmlpath=`echo $webpath | sed -e "s@$webpathBase@$webadd@"`
 
 webfile=$webpathBase/MonitorQuality_$tag.html
 
 [ ! -e $webpathBase ] && mkdir $webpathBase
 [ ! -e $webpath ] && mkdir $webpath
 
-#cp -vu TkMap*_Run_*.*  $webpath/.
+#mv -vu TkMap*_Run_*.*  $webpath/.
 
 cd $webpathBase
 makeHtml $refresh > ${webfile}
