@@ -23,7 +23,7 @@ function makeHtml(){
 
       [ $i -eq 0 ] && echo '<tr>'
       echo '<td valign="middle" align="center">'
-      echo '<a name="'$Run'">'Run $Run'</a>&nbsp;&nbsp;<a href="'${htmlfile}.pdf'">pdf</a>  <a href="'${htmlfile}.xml'">svg</a><br>'
+      echo '<a name="'$Run'">'Run $Run'</a>&nbsp;&nbsp; <a href="'${htmlfile}.xml'">svg</a><br>'
       echo '<a href="'${htmlfile}.png'"><img src="'${htmlfile}.th.png'" style="border: 0px solid ; width: '$thewidth'px; "></a>'
 
       let i++
@@ -51,7 +51,7 @@ webfile=$webpathBase/MonitorQuality_$tag.html
 [ ! -e $webpathBase ] && mkdir $webpathBase
 [ ! -e $webpath ] && mkdir $webpath
 
-#mv -vu TkMap*_Run_*.*  $webpath/.
+mv -vu TkMap*_Run_*.*  $webpath/.
 
 cd $webpathBase
 makeHtml $refresh > ${webfile}
