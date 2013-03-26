@@ -11,6 +11,8 @@
 #include "Geometry/CommonTopologies/interface/StripTopology.h"
 #include "CalibFormats/SiStripObjects/interface/SiStripQuality.h"
 
+//G.Benelli R.Ferretti Mar 26 2013
+//First look into the code to streamline PCL@T0 integration of Strip Bad Component calibration
 
 SiStripBadAPVandHotStripAlgorithmFromClusterOccupancy::SiStripBadAPVandHotStripAlgorithmFromClusterOccupancy(const edm::ParameterSet& iConfig):
   lowoccupancy_(0),
